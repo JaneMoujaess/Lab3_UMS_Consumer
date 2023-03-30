@@ -1,0 +1,44 @@
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using NotificationCenter_Lab3_MicroservicesPractice.Models;
+using NotificationCenter_Lab3_MicroservicesPractice.Services;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+
+var builder = WebApplication.CreateBuilder(args);
+
+//RabbitMQ
+builder.Services.AddHostedService<RabbitMQHostedService>();
+
+
+//DBcontext
+builder.Services.AddDbContext<NotificationCenterContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+// Add services to the container.
+builder.Services.AddTransient<INotificationService, NotificationService>();
+
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
